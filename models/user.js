@@ -24,15 +24,7 @@ const userSchema = new mongoose.Schema(
             default: "user",
         },
 
-        city: {
-            type: String,
-        },
-
-        state: {
-            type: String,
-        },
-
-        pincode: {
+        address: {
             type: String,
         },
 
