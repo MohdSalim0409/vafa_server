@@ -13,6 +13,8 @@ const PORT = process.env.PORT || 5000;
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
 const User = require("./models/user")
+const PerfumeMaster = require("./models/perfumeMaster")
+const PerfumeInventory = require("./models/perfumeInventory")
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -86,4 +88,18 @@ app.put("/api/users/:id", async (req, res) => {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-// 
+
+app.get("/api/inventory", async (req, res) => {
+    try {
+        const inventory = await PerfumeInventory
+            .find()
+            .populate("perfume")  
+            .sort({ createdAt: -1 });
+
+        res.json(inventory);
+    } catch (err) {
+        console.error("Error fetching inventory:", err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
