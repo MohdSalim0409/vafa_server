@@ -103,3 +103,11 @@ app.get("/api/inventory", async (req, res) => {
     }
 });
 
+app.get("/api/perfumes", async (req, res) => {
+    try {
+        const perfumes = await PerfumeMaster.find({ status: true });
+        res.json(perfumes);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
