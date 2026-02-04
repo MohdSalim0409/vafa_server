@@ -2,6 +2,7 @@ const express = require("express")
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const mongoose = require("mongoose");
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -29,7 +30,7 @@ app.listen(PORT, () => { console.log(`Server running on http://localhost:${PORT}
 app.get("/api/users", async (req, res) => {
 
     try {
-        const users = await User.find().sort({ createdAt: -1 });
+        const users = await User.find({ role: { $ne: "admin" } }).sort({ createdAt: -1 });
         res.json(users);
     } catch (err) {
         console.error('Error fetching users : ', err);
@@ -88,8 +89,10 @@ app.put("/api/users/:id", async (req, res) => {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
+// Fetch inventory
 
 app.get("/api/inventory", async (req, res) => {
+
     try {
         const inventory = await PerfumeInventory
             .find()
@@ -105,7 +108,10 @@ app.get("/api/inventory", async (req, res) => {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
+// Fetch perfumes
+
 app.get("/api/perfumes", async (req, res) => {
+
     try {
         const perfumes = await PerfumeMaster.find({ status: true });
         res.json(perfumes);
@@ -116,9 +122,12 @@ app.get("/api/perfumes", async (req, res) => {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
+// Delete perfumes
 
 app.delete("/api/perfumes/:id", async (req, res) => {
+
     try {
+
         const perfume = await PerfumeMaster.findByIdAndDelete(req.params.id);
 
         if (!perfume) {
@@ -134,9 +143,12 @@ app.delete("/api/perfumes/:id", async (req, res) => {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-// DELETE INVENTORY
+// Delete Inventory
+
 app.delete("/api/inventory/:id", async (req, res) => {
+
     try {
+
         const item = await PerfumeInventory.findByIdAndDelete(req.params.id);
 
         if (!item) {
@@ -149,3 +161,5 @@ app.delete("/api/inventory/:id", async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
