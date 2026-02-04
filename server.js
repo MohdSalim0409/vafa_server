@@ -20,7 +20,7 @@ const PerfumeInventory = require("./models/perfumeInventory")
 
 app.use(express.json());
 app.use(cors())
-app.listen(PORT, () => {console.log(`Server running on http://localhost:${PORT}`)});
+app.listen(PORT, () => { console.log(`Server running on http://localhost:${PORT}`) });
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -79,7 +79,7 @@ app.put("/api/users/:id", async (req, res) => {
 
     try {
         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!user) {return res.status(404).json({ message: "User not found" })}
+        if (!user) { return res.status(404).json({ message: "User not found" }) }
         res.json(user);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -93,7 +93,7 @@ app.get("/api/inventory", async (req, res) => {
     try {
         const inventory = await PerfumeInventory
             .find()
-            .populate("perfume")  
+            .populate("perfume")
             .sort({ createdAt: -1 });
 
         res.json(inventory);
@@ -103,11 +103,49 @@ app.get("/api/inventory", async (req, res) => {
     }
 });
 
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
 app.get("/api/perfumes", async (req, res) => {
     try {
         const perfumes = await PerfumeMaster.find({ status: true });
         res.json(perfumes);
     } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
+
+app.delete("/api/perfumes/:id", async (req, res) => {
+    try {
+        const perfume = await PerfumeMaster.findByIdAndDelete(req.params.id);
+
+        if (!perfume) {
+            return res.status(404).json({ message: "Perfume not found" });
+        }
+
+        res.json({ message: "Perfume deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting perfume:", error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
+// DELETE INVENTORY
+app.delete("/api/inventory/:id", async (req, res) => {
+    try {
+        const item = await PerfumeInventory.findByIdAndDelete(req.params.id);
+
+        if (!item) {
+            return res.status(404).json({ message: "Item not found" });
+        }
+
+        res.json({ message: "Inventory deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting inventory item:", error);
         res.status(500).json({ message: error.message });
     }
 });
