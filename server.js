@@ -163,3 +163,20 @@ app.delete("/api/inventory/:id", async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
+// Create perfumes
+app.post("/api/perfumes", async (req, res) => {
+    const perfume = await PerfumeMaster.create(req.body);
+    res.json(perfume);
+});
+
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// Update perfumes
+app.put("/api/perfumes/:id", async (req, res) => {
+    const perfume = await PerfumeMaster.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+    );
+    res.json(perfume);
+});
