@@ -180,3 +180,22 @@ app.put("/api/perfumes/:id", async (req, res) => {
     );
     res.json(perfume);
 });
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// Create inventory
+app.post("/api/inventory", async (req, res) => {
+    const item = await PerfumeInventory.create(req.body);
+    res.json(item);
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// Update inventory
+app.put("/api/inventory/:id", async (req, res) => {
+    const item = await PerfumeInventory.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+    );
+    res.json(item);
+}); 
+
