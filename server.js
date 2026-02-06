@@ -199,3 +199,15 @@ app.put("/api/inventory/:id", async (req, res) => {
     res.json(item);
 }); 
 
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// Register route for user registration
+app.post("/api/users/register", async (req, res) => {
+    try {
+        const user = new User(req.body);
+        await user.save();
+        res.json({ success: true });
+    } catch (err) {
+        res.json({ success: false });
+    }
+});
+
