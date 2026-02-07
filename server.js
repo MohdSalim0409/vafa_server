@@ -211,3 +211,38 @@ app.post("/api/users/register", async (req, res) => {
     }
 });
 
+// ---
+// -----------------------------------------------------------------------------------------------------------------------------------
+
+
+// LOGIN
+app.post("/api/users/login", async (req, res) => {
+    try {
+        const { phone, password } = req.body;
+
+        const user = await User.findOne({ phone });
+
+        if (!user) {
+            return res.json({ success: false, message: "User not found" });
+        }
+
+        // simple password check (plain)
+        if (user.password !== password) {
+            return res.json({ success: false, message: "Wrong password" });
+        }
+
+        res.json({
+            success: true,
+            user: {
+                name: user.name,
+                role: user.role,
+                phone: user.phone,
+                address: user.address
+            }
+        });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ success: false });
+    }
+});
