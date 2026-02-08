@@ -2,7 +2,6 @@ const express = require("express")
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
-const mongoose = require("mongoose");
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -40,24 +39,6 @@ app.get("/api/users", async (req, res) => {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-// Delete users for user management
-
-app.delete("/api/users/:id", async (req, res) => {
-
-    try {
-        const user = await User.findByIdAndDelete(req.params.id);
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        res.json({ message: "User deleted successfully" });
-    } catch (err) {
-        console.error('Error deleting user : ', err);
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// ---------------------------------------------------------------------------------------------------------------------------------------
-
 // Create users for user management
 
 app.post("/api/users", async (req, res) => {
@@ -89,7 +70,25 @@ app.put("/api/users/:id", async (req, res) => {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-// Fetch inventory
+// Delete users for user management
+
+app.delete("/api/users/:id", async (req, res) => {
+
+    try {
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json({ message: "User deleted successfully" });
+    } catch (err) {
+        console.error('Error deleting user : ', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
+// Fetch inventory for invertory control
 
 app.get("/api/inventory", async (req, res) => {
 
@@ -98,7 +97,6 @@ app.get("/api/inventory", async (req, res) => {
             .find()
             .populate("perfume")
             .sort({ createdAt: -1 });
-
         res.json(inventory);
     } catch (err) {
         console.error("Error fetching inventory:", err);
@@ -108,42 +106,29 @@ app.get("/api/inventory", async (req, res) => {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-// Fetch perfumes
+// Create inventory for invertory control
 
-app.get("/api/perfumes", async (req, res) => {
-
-    try {
-        const perfumes = await PerfumeMaster.find({ status: true });
-        res.json(perfumes);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+app.post("/api/inventory", async (req, res) => {
+    const item = await PerfumeInventory.create(req.body);
+    res.json(item);
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-// Delete perfumes
+// Update inventory for invertory control
 
-app.delete("/api/perfumes/:id", async (req, res) => {
-
-    try {
-
-        const perfume = await PerfumeMaster.findByIdAndDelete(req.params.id);
-
-        if (!perfume) {
-            return res.status(404).json({ message: "Perfume not found" });
-        }
-
-        res.json({ message: "Perfume deleted successfully" });
-    } catch (error) {
-        console.error("Error deleting perfume:", error);
-        res.status(500).json({ message: error.message });
-    }
+app.put("/api/inventory/:id", async (req, res) => {
+    const item = await PerfumeInventory.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        { new: true }
+    );
+    res.json(item);
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-// Delete Inventory
+// Delete Inventory for invertory control
 
 app.delete("/api/inventory/:id", async (req, res) => {
 
@@ -163,15 +148,32 @@ app.delete("/api/inventory/:id", async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
-// Create perfumes
+
+// Fetch perfumes for perfume directory
+
+app.get("/api/perfumes", async (req, res) => {
+
+    try {
+        const perfumes = await PerfumeMaster.find({ status: true });
+        res.json(perfumes);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
+// Create perfumes for perfume directory
+
 app.post("/api/perfumes", async (req, res) => {
     const perfume = await PerfumeMaster.create(req.body);
     res.json(perfume);
 });
 
-
 // ---------------------------------------------------------------------------------------------------------------------------------------
-// Update perfumes
+
+// Update perfumes for perfume directory
+
 app.put("/api/perfumes/:id", async (req, res) => {
     const perfume = await PerfumeMaster.findByIdAndUpdate(
         req.params.id,
@@ -182,26 +184,28 @@ app.put("/api/perfumes/:id", async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
-// Create inventory
-app.post("/api/inventory", async (req, res) => {
-    const item = await PerfumeInventory.create(req.body);
-    res.json(item);
+
+// Delete perfumes for perfume directory
+
+app.delete("/api/perfumes/:id", async (req, res) => {
+
+    try {
+
+        const perfume = await PerfumeMaster.findByIdAndDelete(req.params.id);
+        if (!perfume) { return res.status(404).json({ message: "Perfume not found" }) }
+        res.json({ message: "Perfume deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting perfume:", error);
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
-// Update inventory
-app.put("/api/inventory/:id", async (req, res) => {
-    const item = await PerfumeInventory.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true }
-    );
-    res.json(item);
-}); 
 
-// ---------------------------------------------------------------------------------------------------------------------------------------
 // Register route for user registration
+
 app.post("/api/users/register", async (req, res) => {
+
     try {
         const user = new User(req.body);
         await user.save();
@@ -211,26 +215,18 @@ app.post("/api/users/register", async (req, res) => {
     }
 });
 
-// ---
 // -----------------------------------------------------------------------------------------------------------------------------------
 
+// Login route for user authentication
 
-// LOGIN
 app.post("/api/users/login", async (req, res) => {
+
     try {
+
         const { phone, password } = req.body;
-
         const user = await User.findOne({ phone });
-
-        if (!user) {
-            return res.json({ success: false, message: "User not found" });
-        }
-
-        // simple password check (plain)
-        if (user.password !== password) {
-            return res.json({ success: false, message: "Wrong password" });
-        }
-
+        if (!user) { return res.json({ success: false, message: "User not found" }) }
+        if (user.password !== password) { return res.json({ success: false, message: "Wrong password" }) }
         res.json({
             success: true,
             user: {
@@ -242,7 +238,9 @@ app.post("/api/users/login", async (req, res) => {
         });
 
     } catch (err) {
-        console.log(err);
+        console.log('Error logging in : ', err);
         res.status(500).json({ success: false });
     }
 });
+
+// -----------------------------------------------------------------------------------------------------------------------------------
