@@ -2,6 +2,8 @@ const express = require("express")
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const multer = require("multer");
+
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -21,6 +23,16 @@ const PerfumeInventory = require("./models/perfumeInventory")
 app.use(express.json());
 app.use(cors())
 app.listen(PORT, () => { console.log(`Server running on http://localhost:${PORT}`) });
+app.use("/uploads", express.static("uploads"));
+
+const storage = multer.diskStorage({
+    destination: "uploads/",
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + "-" + file.originalname);
+    }
+});
+
+const upload = multer({ storage });
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -165,13 +177,18 @@ app.get("/api/perfumes", async (req, res) => {
 
 // Create perfumes for perfume directory
 
-app.post("/api/perfumes", async (req, res) => {
+app.post("/api/perfumes", upload.single("images"), async (req, res) => {
     try {
-        const perfume = await PerfumeMaster.create(req.body);
-        res.status(201).json(perfume);
+        const body = req.body;
+
+        const perfume = await PerfumeMaster.create({
+            ...body,
+            images: req.file ? req.file.filename : null
+        });
+
+        res.json(perfume);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json(err);
     }
 });
 

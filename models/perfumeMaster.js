@@ -21,7 +21,7 @@ const perfumeMasterSchema = new mongoose.Schema({
     middleNotes: [String],
     baseNotes: [String],
     description: String,
-    images: [String],
+    images: String,
     status: { type: Boolean, default: true }
 }, { timestamps: true });
 
