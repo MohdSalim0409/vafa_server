@@ -166,11 +166,17 @@ app.get("/api/perfumes", async (req, res) => {
 // Create perfumes for perfume directory
 
 app.post("/api/perfumes", async (req, res) => {
-    const perfume = await PerfumeMaster.create(req.body);
-    res.json(perfume);
+    try {
+        const perfume = await PerfumeMaster.create(req.body);
+        res.status(201).json(perfume);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
+
 
 // Update perfumes for perfume directory
 
