@@ -230,10 +230,13 @@ app.delete("/api/perfumes/:id", async (req, res) => {
 app.post("/api/users/register", async (req, res) => {
 
     try {
+        console.log('Fi')
+        console.log(req.body)
         const user = new User(req.body);
         await user.save();
         res.json({ success: true });
     } catch (err) {
+        console.log('Error during register : ', err)
         res.json({ success: false });
     }
 });
