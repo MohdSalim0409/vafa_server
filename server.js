@@ -100,67 +100,6 @@ app.delete("/api/users/:id", async (req, res) => {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-// Fetch inventory for invertory control
-
-app.get("/api/inventory", async (req, res) => {
-
-    try {
-        const inventory = await PerfumeInventory
-            .find()
-            .populate("perfume")
-            .sort({ createdAt: -1 });
-        res.json(inventory);
-    } catch (err) {
-        console.error("Error fetching inventory:", err);
-        res.status(500).json({ message: err.message });
-    }
-});
-
-// ---------------------------------------------------------------------------------------------------------------------------------------
-
-// Create inventory for invertory control
-
-app.post("/api/inventory", async (req, res) => {
-    const item = await PerfumeInventory.create(req.body);
-    res.json(item);
-});
-
-// ---------------------------------------------------------------------------------------------------------------------------------------
-
-// Update inventory for invertory control
-
-app.put("/api/inventory/:id", async (req, res) => {
-    const item = await PerfumeInventory.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true }
-    );
-    res.json(item);
-});
-
-// ---------------------------------------------------------------------------------------------------------------------------------------
-
-// Delete Inventory for invertory control
-
-app.delete("/api/inventory/:id", async (req, res) => {
-
-    try {
-
-        const item = await PerfumeInventory.findByIdAndDelete(req.params.id);
-
-        if (!item) {
-            return res.status(404).json({ message: "Item not found" });
-        }
-
-        res.json({ message: "Inventory deleted successfully" });
-    } catch (error) {
-        console.error("Error deleting inventory item:", error);
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// ---------------------------------------------------------------------------------------------------------------------------------------
-
 // Fetch perfumes for perfume directory
 
 app.get("/api/perfumes", async (req, res) => {
