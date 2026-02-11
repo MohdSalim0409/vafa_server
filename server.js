@@ -136,14 +136,45 @@ app.post("/api/perfumes", upload.single("images"), async (req, res) => {
 
 // Update perfumes for perfume directory
 
-app.put("/api/perfumes/:id", async (req, res) => {
-    const perfume = await PerfumeMaster.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true }
-    );
-    res.json(perfume);
+app.put("/api/perfumes/:id", upload.single("images"), async (req, res) => {
+    try {
+        const updateData = {
+            name: req.body.name,
+            brand: req.body.brand,
+            category: req.body.category,
+            concentration: req.body.concentration,
+            fragranceFamily: req.body.fragranceFamily,
+            description: req.body.description,
+            status: req.body.status === "true"
+        };
+
+        // Convert notes to array
+        if (req.body.topNotes)
+            updateData.topNotes = req.body.topNotes.split(",");
+        if (req.body.middleNotes)
+            updateData.middleNotes = req.body.middleNotes.split(",");
+        if (req.body.baseNotes)
+            updateData.baseNotes = req.body.baseNotes.split(",");
+
+        // If new image uploaded
+        if (req.file) {
+            updateData.images = req.file.filename;
+        }
+
+        const perfume = await PerfumeMaster.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true }
+        );
+
+        res.json(perfume);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Update failed" });
+    }
 });
+
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
