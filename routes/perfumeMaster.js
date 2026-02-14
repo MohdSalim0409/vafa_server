@@ -1,7 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const PerfumeMaster = require("../models/perfumeMaster");
 const multer = require("multer");
+const PerfumeMaster = require("../models/perfumeMaster");
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
+const storage = multer.diskStorage({
+    destination: "./uploads/",
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + "-" + file.originalname);
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -38,14 +49,14 @@ router.post("/createPerfume", upload.single("images"), async (req, res) => {
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
-
 // Update perfumes for perfume directory
 
 router.put("/updatePerfume/:id", upload.single("images"), async (req, res) => {
+
     try {
+
         const updateData = {
-            name: req.body.name,
-            brand: req.body.brand,
+            name: req.body.name, brand: req.body.brand,
             category: req.body.category,
             concentration: req.body.concentration,
             fragranceFamily: req.body.fragranceFamily,
@@ -79,7 +90,6 @@ router.put("/updatePerfume/:id", upload.single("images"), async (req, res) => {
         res.status(500).json({ message: "Update failed" });
     }
 });
-
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
