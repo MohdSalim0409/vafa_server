@@ -9,6 +9,7 @@ const authRoutes = require("./routes/authentication");
 const perfumeRoutes = require("./routes/perfume");
 const userDirectoryRoutes = require("./routes/userDirectory");
 const perfumeMasterRoutes = require("./routes/perfumeMaster");
+const cartRoutes = require("./routes/cart");
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -30,5 +31,5 @@ app.use("/api/inventory", perfumeRoutes);
 app.use("/api/userDirectory", userDirectoryRoutes);
 app.use("/api/perfumeMasters", perfumeMasterRoutes);
 app.use("/api/auth", authRoutes);
-
+app.use("/api/cart", cartRoutes);
 // ---------------------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,61 @@
+const express = require("express");
+const router = express.Router();
+const Cart = require("../models/cart");
+const PerfumeInventory = require("../models/perfumeInventory");
+
+
+// Add to cart
+router.post("/add", async (req, res) => {
+    try {
+        const { userId, inventoryId, quantity } = req.body;
+
+        const inventory = await PerfumeInventory.findById(inventoryId).populate("perfume");
+
+        if (!inventory) return res.status(404).json({ message: "Item not found" });
+
+        let cart = await Cart.findOne({ user: userId });
+
+        if (!cart) {
+            cart = new Cart({ user: userId, items: [] });
+        }
+
+        const existingItem = cart.items.find(
+            i => i.inventory.toString() === inventoryId
+        );
+
+        if (existingItem) {
+            existingItem.quantity += quantity;
+        } else {
+            cart.items.push({
+                inventory: inventoryId,
+                perfumeName: inventory.perfume.name,
+                brand: inventory.perfume.brand,
+                image: inventory.perfume.images,
+                size: inventory.size,
+                quantity,
+                priceAtTime: inventory.sellingPrice,
+                sku: inventory.sku
+            });
+        }
+
+        cart.totalAmount = cart.items.reduce(
+            (sum, i) => sum + i.priceAtTime * i.quantity,
+            0
+        );
+
+        await cart.save();
+
+        res.json({ success: true, cartCount: cart.items.length });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json(err);
+    }
+});
+router.get("/:userId", async (req, res) => {
+    const cart = await Cart.findOne({ user: req.params.userId });
+    if (!cart) return res.json({ items: [], total: 0 });
+
+    res.json(cart);
+});
+
+module.exports = router;
