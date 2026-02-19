@@ -58,8 +58,15 @@ router.get("/:phone", async (req, res) => {
         const { phone } = req.params;
         const person = await User.findOne({ phone });
         if (!person) return res.status(404).json({ message: "User not found" });    
-        const cart = await Cart.findOne({ user: person._id });
+        const cart = await Cart.findOne({ user: person._id })
+            .populate({
+                path: "items.inventory",
+                populate: {
+                    path: "perfume"
+                }
+            });
         if (!cart) return res.json({ items: [], total: 0 });
+        console.log(cart);
         res.json(cart);
     } catch (err) {
         console.error(err);
