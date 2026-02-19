@@ -66,12 +66,48 @@ router.get("/:phone", async (req, res) => {
                 }
             });
         if (!cart) return res.json({ items: [], total: 0 });
-        console.log(cart);
         res.json(cart);
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
     } 
 });
+// Remove item from cart
+router.delete("/remove/:phone/:inventoryId", async (req, res) => {
+    try {
+        const { phone, inventoryId } = req.params;
+
+        const person = await User.findOne({ phone });
+        if (!person) return res.status(404).json({ message: "User not found" });
+
+        const cart = await Cart.findOne({ user: person._id });
+        if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+        // Remove item
+        cart.items = cart.items.filter(
+            item => item.inventory.toString() !== inventoryId
+        );
+
+        // Recalculate total
+        cart.totalAmount = cart.items.reduce(
+            (sum, i) => sum + i.priceAtTime * i.quantity,
+            0
+        );
+
+        await cart.save();
+
+        res.json({
+            success: true,
+            items: cart.items,
+            cartCount: cart.items.length,
+            totalAmount: cart.totalAmount
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Remove failed" });
+    }
+});
+
 
 module.exports = router;
