@@ -7,7 +7,6 @@ const User = require("../models/user");
 
 // Add to cart
 router.post("/add", async (req, res) => {
-    console.log("Add to cart request:", req.body);
     try {
         const { userId, inventoryId, quantity } = req.body;
 
@@ -56,13 +55,10 @@ router.post("/add", async (req, res) => {
 });
 router.get("/:phone", async (req, res) => {
     try {
-        console.log("Get cart request for phone:", req.params.phone);
         const { phone } = req.params;
         const person = await User.findOne({ phone });
-        console.log("Found user:", person);
         if (!person) return res.status(404).json({ message: "User not found" });    
         const cart = await Cart.findOne({ user: person._id });
-        console.log("Found cart:", cart);
         if (!cart) return res.json({ items: [], total: 0 });
         res.json(cart);
     } catch (err) {
