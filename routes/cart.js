@@ -4,12 +4,15 @@ const Cart = require("../models/cart");
 const PerfumeInventory = require("../models/perfumeInventory");
 const User = require("../models/user");
 
+// ---------------------------------------------------------------------------------------------------------------------------------------
 
 // Add to cart
-router.post("/add", async (req, res) => {
-    try {
-        const { userId, inventoryId, quantity } = req.body;
 
+router.post("/add", async (req, res) => {
+    
+    try {
+
+        const { userId, inventoryId, quantity } = req.body;
         const person = await User.findOne({ phone: userId });
         const inventory = await PerfumeInventory.findById(inventoryId).populate("perfume");
 
@@ -21,9 +24,7 @@ router.post("/add", async (req, res) => {
             cart = new Cart({ user: person._id, items: [] });
         }
 
-        const existingItem = cart.items.find(
-            i => i.inventory.toString() === inventoryId
-        );
+        const existingItem = cart.items.find((i) => i.inventory.toString() === inventoryId);
 
         if (existingItem) {
             existingItem.quantity += quantity;
@@ -36,81 +37,77 @@ router.post("/add", async (req, res) => {
                 size: inventory.size,
                 quantity,
                 priceAtTime: inventory.sellingPrice,
-                sku: inventory.sku
+                sku: inventory.sku,
             });
         }
 
-        cart.totalAmount = cart.items.reduce(
-            (sum, i) => sum + i.priceAtTime * i.quantity,
-            0
-        );
-
+        cart.totalAmount = cart.items.reduce((sum, i) => sum + i.priceAtTime * i.quantity, 0);
         await cart.save();
-
         res.json({ success: true, cartCount: cart.items.length });
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
     }
 });
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
 router.get("/:phone", async (req, res) => {
+
     try {
+
         const { phone } = req.params;
         const person = await User.findOne({ phone });
-        if (!person) return res.status(404).json({ message: "User not found" });    
-        const cart = await Cart.findOne({ user: person._id })
-            .populate({
-                path: "items.inventory",
-                populate: {
-                    path: "perfume"
-                }
-            });
+        if (!person) return res.status(404).json({ message: "User not found" });
+        const cart = await Cart.findOne({ user: person._id }).populate({
+            path: "items.inventory",
+            populate: { path: "perfume" },
+        });
         if (!cart) return res.json({ items: [], total: 0 });
         res.json(cart);
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
-    } 
+    }
 });
-// Remove item from cart
-router.delete("/remove/:phone/:inventoryId", async (req, res) => {
-    try {
-        const { phone, inventoryId } = req.params;
 
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
+// Remove item from cart
+
+router.delete("/remove/:phone/:inventoryId", async (req, res) => {
+
+    try {
+
+        const { phone, inventoryId } = req.params;
         const person = await User.findOne({ phone });
         if (!person) return res.status(404).json({ message: "User not found" });
-
         const cart = await Cart.findOne({ user: person._id });
         if (!cart) return res.status(404).json({ message: "Cart not found" });
-
-        // Remove item
-        cart.items = cart.items.filter(
-            item => item.inventory.toString() !== inventoryId
-        );
-
-        // Recalculate total
-        cart.totalAmount = cart.items.reduce(
-            (sum, i) => sum + i.priceAtTime * i.quantity,
-            0
-        );
+        cart.items = cart.items.filter((item) => item.inventory.toString() !== inventoryId);
+        cart.totalAmount = cart.items.reduce((sum, i) => sum + i.priceAtTime * i.quantity, 0);
 
         await cart.save();
 
         res.json({
-            success: true,
-            items: cart.items,
+            success: true, items: cart.items,
             cartCount: cart.items.length,
-            totalAmount: cart.totalAmount
+            totalAmount: cart.totalAmount,
         });
-
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Remove failed" });
     }
 });
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+
 // Update cart item quantity
+
 router.put("/update", async (req, res) => {
+
     try {
+
         const { phone, inventoryId, action } = req.body;
 
         const person = await User.findOne({ phone });
@@ -119,9 +116,7 @@ router.put("/update", async (req, res) => {
         const cart = await Cart.findOne({ user: person._id });
         if (!cart) return res.status(404).json({ message: "Cart not found" });
 
-        const itemIndex = cart.items.findIndex(
-            i => i.inventory.toString() === inventoryId.toString()
-        );
+        const itemIndex = cart.items.findIndex((i) => i.inventory.toString() === inventoryId.toString());
 
         if (itemIndex === -1) {
             return res.status(404).json({ message: "Item not found" });
@@ -133,34 +128,26 @@ router.put("/update", async (req, res) => {
 
         if (action === "decrease") {
             cart.items[itemIndex].quantity -= 1;
-
-            // If quantity becomes 0 → remove item
             if (cart.items[itemIndex].quantity <= 0) {
                 cart.items.splice(itemIndex, 1);
             }
         }
 
         // Recalculate total
-        cart.totalAmount = cart.items.reduce(
-            (sum, i) => sum + i.priceAtTime * i.quantity,
-            0
-        );
-
+        cart.totalAmount = cart.items.reduce((sum, i) => sum + i.priceAtTime * i.quantity, 0);
         await cart.save();
 
         res.json({
-            success: true,
-            items: cart.items,
+            success: true,  items: cart.items,
             cartCount: cart.items.length,
-            totalAmount: cart.totalAmount
+            totalAmount: cart.totalAmount,
         });
-
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: "Update failed" });
     }
 });
 
-
+// ---------------------------------------------------------------------------------------------------------------------------------------
 
 module.exports = router;

@@ -4,10 +4,13 @@ const Cart = require("../models/cart");
 const Order = require("../models/order");
 const User = require("../models/user");
 
-router.post("/checkout", async (req, res) => {
-    try {
-        const { phone } = req.body;
+// ---------------------------------------------------------------------------------------------------------------------------------------
 
+router.post("/checkout", async (req, res) => {
+
+    try {
+
+        const { phone } = req.body;
         const user = await User.findOne({ phone });
         if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -20,17 +23,17 @@ router.post("/checkout", async (req, res) => {
         const newOrder = new Order({
             orderNumber: "ORD" + Date.now(),
             user: user._id,
-            items: cart.items.map(item => ({
+            items: cart.items.map((item) => ({
                 inventory: item.inventory,
                 perfumeName: item.perfumeName,
                 size: item.size,
                 quantity: item.quantity,
                 price: item.priceAtTime,
-                subtotal: item.priceAtTime * item.quantity
+                subtotal: item.priceAtTime * item.quantity,
             })),
             totalAmount: cart.totalAmount,
             shippingAddress: user.address,
-            paymentStatus: "Pending"
+            paymentStatus: "Pending",
         });
 
         await newOrder.save();
@@ -41,12 +44,12 @@ router.post("/checkout", async (req, res) => {
         await cart.save();
 
         res.json({ success: true, message: "Order placed successfully" });
-
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
     }
 });
 
-module.exports = router;
+// ---------------------------------------------------------------------------------------------------------------------------------------
 
+module.exports = router;

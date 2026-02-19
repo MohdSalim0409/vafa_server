@@ -8,6 +8,7 @@ const PerfumeMaster = require("../models/perfumeMaster");
 // Fetch perfumes list to show in store front page
 
 router.get("/", async (req, res) => {
+    
     try {
         const data = await PerfumeInventory.aggregate([
             {
@@ -15,8 +16,8 @@ router.get("/", async (req, res) => {
                     from: "perfumemasters",
                     localField: "perfume",
                     foreignField: "_id",
-                    as: "perfume"
-                }
+                    as: "perfume",
+                },
             },
             { $unwind: "$perfume" },
 
@@ -30,11 +31,11 @@ router.get("/", async (req, res) => {
                             size: "$size",
                             price: "$sellingPrice",
                             quantity: "$quantity",
-                            status: "$status"
-                        }
-                    }
-                }
-            }
+                            status: "$status",
+                        },
+                    },
+                },
+            },
         ]);
 
         res.json(data);
@@ -42,7 +43,6 @@ router.get("/", async (req, res) => {
         res.status(500).json(err);
     }
 });
-
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
