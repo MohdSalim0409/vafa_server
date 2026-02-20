@@ -6,6 +6,37 @@ const User = require("../models/user");
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
+
+//create order for customer
+// Get all orders for a user
+router.get("/user/:phone", async (req, res) => {
+    try {
+        const { phone } = req.params;
+
+        const user = await User.findOne({ phone });
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const orders = await Order.find({ user: user._id })
+            .sort({ createdAt: -1 });
+
+        res.json(orders);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
+    }
+});
+    
+router.get("/admin", async (req, res) => {
+    try {
+        const orders = await Order.find().sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server Error" });
+
+    }
+});
+
 router.post("/checkout", async (req, res) => {
 
     try {
