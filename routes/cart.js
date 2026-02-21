@@ -43,7 +43,18 @@ router.post("/add", async (req, res) => {
 
         cart.totalAmount = cart.items.reduce((sum, i) => sum + i.priceAtTime * i.quantity, 0);
         await cart.save();
-        res.json({ success: true, cartCount: cart.items.length });
+
+        const updatedCart = await Cart.findById(cart._id).populate({
+            path: "items.inventory",
+            populate: { path: "perfume" },
+        });
+
+        res.json({
+            success: true,
+            items: updatedCart.items,
+            cartCount: updatedCart.items.length,
+            totalAmount: updatedCart.totalAmount,
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json(err);
@@ -66,7 +77,7 @@ router.get("/:phone", async (req, res) => {
         if (!cart) return res.json({ items: [], total: 0 });
         res.json(cart);
     } catch (err) {
-        console.error(err);
+        console.error("error fetching cart:", err);
         res.status(500).json(err);
     }
 });
@@ -95,7 +106,7 @@ router.delete("/remove/:phone/:inventoryId", async (req, res) => {
             totalAmount: cart.totalAmount,
         });
     } catch (err) {
-        console.error(err);
+        console.error("error removing item from cart:", err);
         res.status(500).json({ message: "Remove failed" });
     }
 });
