@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+
 const orderSchema = new mongoose.Schema({
     orderNumber: {
         type: String,
@@ -27,7 +28,7 @@ const orderSchema = new mongoose.Schema({
     totalAmount: Number,
     paymentMethod: {
         type: String,
-        enum: ["COD", "UPI", "Card", "NetBanking"]
+        enum: ["COD", "RAZORPAY"]
     },
     payment: {
         type: mongoose.Schema.Types.ObjectId,

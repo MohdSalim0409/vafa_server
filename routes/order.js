@@ -3,6 +3,7 @@ const router = express.Router();
 const Cart = require("../models/cart");
 const Order = require("../models/order");
 const User = require("../models/user");
+const Payment = require("../models/payment");
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -40,10 +41,10 @@ router.get("/admin", async (req, res) => {
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
 router.post("/checkout", async (req, res) => {
-
     try {
 
-        const { phone } = req.body;
+        const { phone, shippingAddress, paymentMethod } = req.body;
+
         const user = await User.findOne({ phone });
         if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -52,7 +53,7 @@ router.post("/checkout", async (req, res) => {
             return res.status(400).json({ message: "Cart is empty" });
         }
 
-        // Create order
+        // 1️⃣ Create Order
         const newOrder = new Order({
             orderNumber: "ORD" + Date.now(),
             user: user._id,
@@ -65,24 +66,65 @@ router.post("/checkout", async (req, res) => {
                 subtotal: item.priceAtTime * item.quantity,
             })),
             totalAmount: cart.totalAmount,
-            shippingAddress: user.address,
-            paymentStatus: "Pending",
+            shippingAddress,
+            paymentMethod,
+            paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid",
+            orderStatus: "Placed"
         });
 
         await newOrder.save();
 
-        // Clear cart
+        // 2️⃣ Create Payment Record
+        const newPayment = new Payment({
+            order: newOrder._id,
+            transactionId: paymentMethod === "COD" ? null : "TXN" + Date.now(),
+            method: paymentMethod,
+            amount: cart.totalAmount,
+            status: paymentMethod === "COD" ? "Pending" : "Success",
+            paidAt: paymentMethod === "COD" ? null : new Date()
+        });
+
+        await newPayment.save();
+
+        // 3️⃣ Link Payment to Order
+        newOrder.payment = newPayment._id;
+        await newOrder.save();
+
+        // 4️⃣ Clear Cart
         cart.items = [];
         cart.totalAmount = 0;
         await cart.save();
 
-        res.json({ success: true, message: "Order placed successfully" });
+        res.json({ success: true, message: "Order & Payment created successfully" });
+
     } catch (err) {
         console.error(err);
-        res.status(500).json(err);
+        res.status(500).json({ message: "Checkout failed" });
     }
 });
 
+// PUT - Update Order Status (Admin)
+router.put("/admin/:id/status", async (req, res) => {
+    try {
+        const { orderStatus } = req.body;
+
+        const updatedOrder = await Order.findByIdAndUpdate(
+            req.params.id,
+            { orderStatus },
+            { new: true }
+        );
+
+        if (!updatedOrder) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        res.json(updatedOrder);
+
+    } catch (error) {
+        console.error("Error updating order status:", error);
+        res.status(500).json({ message: "Server Error" });
+    }
+});
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
 module.exports = router;
