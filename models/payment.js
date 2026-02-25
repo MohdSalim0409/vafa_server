@@ -1,7 +1,9 @@
-const mongoose = require("mongoose");
-
 const paymentSchema = new mongoose.Schema({
-    order: { type: mongoose.Schema.Types.ObjectId, ref: "Order" },
+    order: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Order",
+        required: true
+    },
     transactionId: String,
     method: {
         type: String,
@@ -14,7 +16,4 @@ const paymentSchema = new mongoose.Schema({
         default: "Pending"
     },
     paidAt: Date
-
 }, { timestamps: true });
-
-module.exports = mongoose.model("Payment", paymentSchema);
