@@ -33,7 +33,9 @@ router.get("/fetchPerfumes", async (req, res) => {
 // Create perfumes for perfume directory
 
 router.post("/createPerfume", upload.single("images"), async (req, res) => {
+
     try {
+        
         const body = req.body;
 
         const perfume = await PerfumeMaster.create({
