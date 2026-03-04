@@ -13,6 +13,7 @@ const orderRoutes = require("./routes/order");
 const inventoryRoutes = require("./routes/inventory");
 const perfumeRoutes = require("./routes/perfume");
 const dashboardRoutes = require("./routes/dashboard");
+const userRoutes = require('./routes/userRoutes');
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -20,14 +21,16 @@ dotenv.config({ quiet: true });
 connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
-// Add this with your other routes
-const userRoutes = require('./routes/userRoutes');
-app.use('/api/users', userRoutes);
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
+app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
@@ -43,5 +46,6 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use('/api/users', userRoutes);
 
 // ---------------------------------------------------------------------------------------------------------------------------------------

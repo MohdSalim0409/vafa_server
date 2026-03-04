@@ -4,6 +4,8 @@ const User = require('../models/User');
 
 // Get user by phone number
 router.get('/phone/:phone', async (req, res) => {
+
+    console.log(phone)
     try {
         const user = await User.findOne({ phone: req.params.phone });
         if (!user) {
