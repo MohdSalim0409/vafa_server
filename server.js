@@ -20,6 +20,9 @@ dotenv.config({ quiet: true });
 connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
+// Add this with your other routes
+const userRoutes = require('./routes/userRoutes');
+app.use('/api/users', userRoutes);
 
 // ---------------------------------------------------------------------------------------------------------------------------------------
 
