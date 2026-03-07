@@ -6,18 +6,15 @@ const PerfumeMaster = require("../models/perfumeMaster");
 // Get all inventory items with pagination and filters
 
 exports.getAllInventory = async (req, res) => {
-
+    
     try {
-
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
 
         let filter = {};
 
         if (req.query.status) filter.status = req.query.status;
         if (req.query.perfume) filter.perfume = req.query.perfume;
         if (req.query.size) filter.size = req.query.size;
+
         if (req.query.search) {
             filter.$or = [
                 { sku: { $regex: req.query.search, $options: 'i' } },
@@ -27,22 +24,14 @@ exports.getAllInventory = async (req, res) => {
 
         const inventory = await PerfumeInventory.find(filter)
             .populate('perfume', 'name brand category concentration')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
-
-        const total = await PerfumeInventory.countDocuments(filter);
+            .sort({ createdAt: -1 });
 
         res.status(200).json({
             success: true,
-            data: inventory,
-            pagination: {
-                currentPage: page,
-                totalPages: Math.ceil(total / limit),
-                totalItems: total,
-                itemsPerPage: limit
-            }
+            count: inventory.length,
+            data: inventory
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
